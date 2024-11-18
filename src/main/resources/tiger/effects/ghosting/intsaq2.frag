@@ -16,12 +16,12 @@ layout(location=0) out uvec4 bitmask;
 layout(location=1) out uvec4 labelingBitmask;
 
 void main(void) {
-   bitmask = texture2D(id, texCoord);
-   labelingBitmask = texture2D(labelingId, texCoord);
+   bitmask = texture(id, texCoord);
+   labelingBitmask = texture(labelingId, texCoord);
 
    if(considerTransparency == 1) {
-       float layer_transparency = texture2D(composition, texCoord).a;
-       float accumulated_transparency = texture2D(finalColor, texCoord).a;
+       float layer_transparency = texture(composition, texCoord).a;
+       float accumulated_transparency = texture(finalColor, texCoord).a;
        if(layer_transparency > layerTransparencyTreshold || accumulated_transparency < accumulatedTransparencyTreshold) {
             labelingBitmask = uvec4(0u, 0u, 0u, 0u);
        }

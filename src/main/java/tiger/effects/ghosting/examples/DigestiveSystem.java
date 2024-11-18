@@ -62,7 +62,7 @@ public class DigestiveSystem {
         GhostingCmolik peeling = new GhostingCmolik(scene, layerGroups, null);
 
         Window w = new Window(scene, 512, 512);
-        w.debug = true;
+        //w.debug = true;
         peeling.createUI(w);
         w.setEffect(peeling);
         w.runFastAsPosible = true;

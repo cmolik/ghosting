@@ -5,20 +5,13 @@
 
 package tiger.effects.ghosting;
 
-import com.jogamp.opengl.util.GLBuffers;
-import gleem.BSphere;
 import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -26,15 +19,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.Properties;
-import javax.imageio.ImageIO;
-import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.GL3;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.awt.ComponentEvents;
+
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JFileChooser;
@@ -47,12 +33,18 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.awt.ComponentEvents;
+
+import gleem.BSphere;
+import mesh.occlusions.OcclusionQuery;
+import scene.Scene;
 import scene.surface.mesh.Mesh;
 import scene.surface.mesh.MeshUtils;
-import scene.Scene;
-import mesh.occlusions.OcclusionQuery;
 import tiger.core.CameraProperties;
 import tiger.core.DefaultParameter;
 import tiger.core.FrameBuffer;
@@ -74,7 +66,6 @@ import tiger.ui.IntSlider;
 import tiger.ui.TigerChangeEvent;
 import tiger.ui.TigerChangeListener;
 import tiger.util.saq.Saq;
-//import com.jogamp.opengl.util.awt.TextRenderer;
 
 /**
  *
@@ -109,7 +100,6 @@ public abstract class Ghosting implements GLEventListener {
 
     Texture2D projectionTexture;
     Texture2D accumTexture;
-    //Texture2D maxDepth;
     Texture2D color1;
     Texture2D depth1;
     Texture2D id1;
@@ -126,8 +116,8 @@ public abstract class Ghosting implements GLEventListener {
     SwapingLink<Texture> invLabelingId;
     SwapingLink<Texture> labelingId;
     Texture2D finalColor;
-    Texture2D finalId;
-    Texture2D finalLabelingId;
+    public Texture2D finalId;
+    public Texture2D finalLabelingId;
     Texture2D countTexture;
     Texture2D hullTexture;
     Texture2D silhouetteTexture;
@@ -136,14 +126,11 @@ public abstract class Ghosting implements GLEventListener {
 
     FrameBuffer projectionBuffer;
     FrameBuffer accumBuffer;
-    //FrameBuffer maxDepthBuffer;
     FrameBuffer layer1;
     FrameBuffer layer2;
     SwapingLink<FrameBuffer> layer;
     FrameBuffer finalBuffer;
     FrameBuffer bitmaskBuffer;
-    FrameBuffer bbuffer2;
-    MutableLink<FrameBuffer> bitmaskBuffer2;
     FrameBuffer countBuffer;
     FrameBuffer hullBuffer;
     FrameBuffer silhouetteBuffer;
@@ -165,11 +152,8 @@ public abstract class Ghosting implements GLEventListener {
     Pass hullPass;
     Pass displayHullPass;
     Pass silhouette;
-    //Erosion2 hallo;
     Pass halloCompose;
     public AbstractExternalLabeling labeling;
-    Pass showLabelingId;
-    //TextRenderer textRenderer;
 
     OcclusionQuery oq;
 
@@ -178,7 +162,6 @@ public abstract class Ghosting implements GLEventListener {
     GlslProgramIntParameter labelingIndex;
     GlslProgramIntParameter labelingBit;
     GlslProgramFloatParameter imp;
-    //GlslProgramFloatParameter meshId;
     GlslProgramFloatParameter offsetX;
     GlslProgramFloatParameter offsetY;
 
@@ -190,7 +173,7 @@ public abstract class Ghosting implements GLEventListener {
     GlslProgramFloatParameter distancePower = new GlslProgramFloatParameter("distancePower", 12f);
     GlslProgramIntParameter shapeOpacity = new GlslProgramIntParameter("shapeOpacity", 1);
     GlslProgramFloatParameter shapePower = new GlslProgramFloatParameter("shapePower", 0.2f);
-    GlslProgramIntParameter considerTransparency = new GlslProgramIntParameter("considerTransparency", 0);
+    GlslProgramIntParameter considerTransparency = new GlslProgramIntParameter("considerTransparency", 1);
     GlslProgramFloatParameter layerTransparencyTreshold = new GlslProgramFloatParameter("layerTransparencyTreshold", 0.75f);
     GlslProgramFloatParameter accumulatedTransparencyTreshold = new GlslProgramFloatParameter("accumulatedTransparencyTreshold", 0.05f);
     GlslProgramIntParameter numberOfLayersToRender = new GlslProgramIntParameter("numberOfLayers", 25);
@@ -201,11 +184,11 @@ public abstract class Ghosting implements GLEventListener {
     GlslProgramIntParameter edges = new GlslProgramIntParameter("edges", 1);
     GlslProgramIntParameter background = new GlslProgramIntParameter("background", 1);
     GlslProgramIntParameter redBlueVis = new GlslProgramIntParameter("redBlue", 0);
-    public GlslProgramIntParameter selection = new GlslProgramIntParameter("selection", 0);
+    public GlslProgramIntParameter selection = new GlslProgramIntParameter("selection", 1);
     GlslProgramIntParameter showLabeling = new GlslProgramIntParameter("Show labeling", 1);
     GlslProgramIntParameter fakeLabels = new GlslProgramIntParameter("fakeLabels", 0);
-    GlslProgramIntParameter idToShow = new GlslProgramIntParameter("showId", 0);
-    GlslProgramIntParameter showId = new GlslProgramIntParameter("Show Id", 0);
+    public GlslProgramIntParameter idToShow = new GlslProgramIntParameter("idToShow", 0);
+    GlslProgramIntParameter showId = new GlslProgramIntParameter("showId", 0);
     GlslProgramIntParameter roiVis = new GlslProgramIntParameter("roiVis", 0);
     public GlslProgramFloatArrayParameter roiColor = new GlslProgramFloatArrayParameter("roiColor", new float[] {0.5f, 1f, 0.5f});
     GlslProgramIntParameter startTest = new GlslProgramIntParameter("Start test", 0);
@@ -222,23 +205,16 @@ public abstract class Ghosting implements GLEventListener {
     long time = System.currentTimeMillis();
     long counter = 0;
     long layers = 0;
-
-    /*ConnectionGraph cg;
-    public int[][] distanceMatrix;
-    PartonomicOrganization po;
-    public int[][] transitiveClosure;*/
-
-    //ObjectList exploration;
     
     public Window window;
     JFrame objects;
     
-    public boolean saveImage = false;
-    public String saveImagePath = "C:/Temp/";
+    //public boolean saveImage = false;
+    //public String saveImagePath = "C:/Temp/";
     
     protected Ghosting() {}
 
-    public Ghosting(Scene scene, AbstractExternalLabeling labeling) {
+    public Ghosting(Scene<Mesh> scene, AbstractExternalLabeling labeling) {
         this(scene, null, null, labeling);
     }
 
@@ -266,51 +242,7 @@ public abstract class Ghosting implements GLEventListener {
             this.labelGroups.set(lg);
         }
 
-        /*System.out.println("\nCONTACT GRAPH");
-        cg = new ConnectionGraph(scene);
-        cg.load();
-        if(!cg.isLoaded()) {
-            cg.initTrees(0f);
-            cg.calculateCollisions(scene.getBoundingSphere().getRadius() / 1000f);
-            cg.save();
-        }
-
-        // load partonomic organization
-        System.out.println("\nPARTONOMIC ORGANIZATION");
-        po = new PartonomicOrganization(scene);
-        po.load();
-        System.out.println(po.toString());
-        // calculate P from DP
-        transitiveClosure = GraphUtils.transitiveClosure(po.getGraph());
-        for(int i = 0; i < transitiveClosure.length; i++) {
-            System.out.println(Arrays.toString(transitiveClosure[i]));
-        }
-
-        int[][] g = cg.getGraph();
-        Mesh[] meshes = scene.getAllMeshes().toArray(new Mesh[scene.getSize()]);
-        //eliminate contacts
-        for(int i = 0; i < meshes.length; i++) {
-            if(meshes[i].id >= g.length) continue;
-            for(int j = 0; j < meshes.length; j++) {
-                if(meshes[j].id >= g.length) continue;
-                if(meshes[i].parent != meshes[j].parent) {
-                    g[meshes[i].id][meshes[j].id] = 0;
-                    g[meshes[j].id][meshes[i].id] = 0;
-                }
-            }
-        }
-
-        //calculate shortest distances
-        distanceMatrix = GraphUtils.shortestPaths(g);
-        //for(int i = 0; i < distanceMatrix.length; i++) {
-        //    System.out.println(Arrays.toString(distanceMatrix[i]));
-        //}
-
-        System.out.println("Scene size = " + scene.getSize());
-
-        exploration = new Exploration(this);*/
-
-        convexHull = new Scene();
+        convexHull = new Scene<>();
         Mesh convexHullMesh = MeshUtils.calculateConvexHull(scene.getAllMeshes(), true);
         convexHull.addMesh(convexHullMesh);
 
@@ -319,31 +251,35 @@ public abstract class Ghosting implements GLEventListener {
             meshNames[mesh.getId()] = "" + mesh.getId();
         }
 
-        //this.oldImportance = new float[scene.getSize()];
-        //this.simportance = new float[scene.getSize()];
         this.importance = new GlslProgramFloatParameter[scene.getSize()];
         int i = 0;
         for(Mesh mesh : scene.getAllMeshes()) {
-            //simportance[i] = 1.0f;
             importance[i] = new GlslProgramFloatParameter("imp", 1.0f);
-            //intStart = System.currentTimeMillis();
             i++;
         }
-        //eimportance[4] = 1.0f;
-        //eimportance[8] = 1.0f;
 
         oq = new OcclusionQuery();
 
         projectionTexture = new Texture2D(GL2.GL_RGBA32UI, GL2.GL_RGBA_INTEGER, GL.GL_UNSIGNED_INT);
+        projectionTexture.setParameter(GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
+        projectionTexture.setParameter(GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
         accumTexture = new Texture2D(GL.GL_RGBA32F, GL.GL_RGBA, GL.GL_FLOAT);
         color1 = new Texture2D(GL.GL_RGBA32F, GL.GL_RGBA, GL.GL_FLOAT);
         depth1 = new Texture2D(GL.GL_RGBA32F, GL.GL_RGBA, GL.GL_FLOAT);
         id1 = new Texture2D(GL2.GL_RGBA32UI, GL2.GL_RGBA_INTEGER, GL.GL_UNSIGNED_INT);
+        id1.setParameter(GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
+        id1.setParameter(GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
         labelingId1 = new Texture2D(GL2.GL_RGBA32UI, GL2.GL_RGBA_INTEGER, GL.GL_UNSIGNED_INT);
+        labelingId1.setParameter(GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
+        labelingId1.setParameter(GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
         color2 = new Texture2D(GL.GL_RGBA32F, GL.GL_RGBA, GL.GL_FLOAT);
         depth2 = new Texture2D(GL.GL_RGBA32F, GL.GL_RGBA, GL.GL_FLOAT);
         id2 = new Texture2D(GL2.GL_RGBA32UI, GL2.GL_RGBA_INTEGER, GL.GL_UNSIGNED_INT);
+        id2.setParameter(GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
+        id2.setParameter(GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
         labelingId2 = new Texture2D(GL2.GL_RGBA32UI, GL2.GL_RGBA_INTEGER, GL.GL_UNSIGNED_INT);
+        labelingId2.setParameter(GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
+        labelingId2.setParameter(GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
 
         color = new SwapingLink<Texture>(color1, color2);
         invColor = new SwapingLink<Texture>(color2, color1);
@@ -356,8 +292,12 @@ public abstract class Ghosting implements GLEventListener {
         finalColor = new Texture2D(GL.GL_RGBA32F, GL2.GL_RGBA, GL.GL_FLOAT);
 
         finalId = new Texture2D(GL2.GL_RGBA32UI, GL2.GL_RGBA_INTEGER, GL.GL_UNSIGNED_INT);
+        finalId.setParameter(GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
+        finalId.setParameter(GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
 
         finalLabelingId = new Texture2D(GL2.GL_RGBA32UI, GL2.GL_RGBA_INTEGER, GL.GL_UNSIGNED_INT);
+        finalLabelingId.setParameter(GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
+        finalLabelingId.setParameter(GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
 
         countTexture = new Texture2D(GL2.GL_RGB32F, GL.GL_RGB, GL.GL_FLOAT);
 
@@ -397,18 +337,12 @@ public abstract class Ghosting implements GLEventListener {
         finalBuffer = new FrameBuffer(false, finalColor);
 
         bitmaskBuffer = new FrameBuffer(false, finalId, finalLabelingId);
-        //if(labeling == null || labeling.labelInvisibleGeometry.getValue() == 0) {
-        bbuffer2 = new FrameBuffer(false, finalId);
-        //}
-        bitmaskBuffer2 = new MutableLink<FrameBuffer>(bitmaskBuffer);
         
         countBuffer = new FrameBuffer(false, countTexture, accumTexture);
 
         hullBuffer = new FrameBuffer(false, hullTexture);
 
         compositionBuffer = new FrameBuffer(false, compositionTexture);
-
-        //imp = new GlslProgramFloatParameter("imp", 0f);
         
         RenderState rs = new RenderState();
         rs.disable(GL.GL_DEPTH_TEST);
@@ -496,17 +430,6 @@ public abstract class Ghosting implements GLEventListener {
         nextLayer.setTarget(layer);
         nextLayer.renderState = rs;
 
-        /*rs = new RenderState();
-        rs.disable(GL.GL_DEPTH_TEST);
-        rs.enable(GL.GL_COLOR_LOGIC_OP);
-        rs.setLogicOp(GL.GL_OR);
-
-        fragment = ClassLoader.getSystemResourceAsStream("tiger/selection/intsaq.frag");
-        bitmask = new Saq(fragment, id);
-        bitmask.setTarget(bitmaskBuffer);
-        bitmask.renderState = rs;
-        bitmask.init(glad);*/
-
         createCompositionPass();
 
         createBlendPass();
@@ -528,7 +451,7 @@ public abstract class Ghosting implements GLEventListener {
         bitmask2.addTexture(labelingId, "labelingId");
         bitmask2.addTexture(compositionTexture, "composition");
         bitmask2.addTexture(finalColor, "finalColor");
-        bitmask2.setTarget(bitmaskBuffer2);
+        bitmask2.setTarget(bitmaskBuffer);
         bitmask2.renderState = rs;
         bitmask2.glslVaryingParameters.add(considerTransparency);
         bitmask2.glslVaryingParameters.add(layerTransparencyTreshold);
@@ -574,22 +497,12 @@ public abstract class Ghosting implements GLEventListener {
 
         fragment = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/background.frag");
         saq = new Saq(fragment, finalColor);
-        saq.addTexture(compositionTexture, "color");
-        saq.addTexture(invLabelingId, "layerId");
         saq.addTexture(finalId, "id");
         saq.addTexture(finalLabelingId, "labelingId");
         saq.glslVaryingParameters.add(background);
-        saq.glslVaryingParameters.add(showComposition);
-        //fragment = ClassLoader.getSystemResourceAsStream("tiger/selection/falsecolors.frag");
-        //saq = new Saq(fragment, accumTexture);
+        saq.glslVaryingParameters.add(showId);
+        saq.glslVaryingParameters.add(idToShow);
         saq.renderState = rs;
-
-        fragment = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/inttofloat.frag");
-        showLabelingId = new Saq(fragment, finalLabelingId);
-        showLabelingId.renderState = rs;
-        showLabelingId.glslVaryingParameters.add(idToShow);
-
-
 
         /*float step = 4f/512f;
         hallo = new Erosion2(silhouetteTexture, halloBuffer, step, 2);
@@ -629,17 +542,13 @@ public abstract class Ghosting implements GLEventListener {
         fragment = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/Convolution.frag");
         displayHullPass = new Saq(fragment, hullTexture);
         displayHullPass.renderState = rs;
-        
-        //labeling = new ExternalLabeling(finalLabelingId, countTexture, hullTexture, meshNames, 512, ExternalLabeling.HORIZONTAL_LAYOUT, eimportance);
 
     }
 
     public void setImportances(float[] imp) {
-        //simportance = importance;
         for(int i = 0; i < imp.length; i++) {
             importance[i].setValue(imp[i]);
         }
-        //intStart = System.currentTimeMillis();
     }
 
     public void init(GLAutoDrawable glad) {
@@ -651,63 +560,19 @@ public abstract class Ghosting implements GLEventListener {
         oq.init(glad);
 
         projectionTexture.init(glad);
-        projectionTexture.bind(gl);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
         accumTexture.init(glad);
         color1.init(glad);
         depth1.init(glad);
         id1.init(glad);
-        id1.bind(gl);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
         labelingId1.init(glad);
-        labelingId1.bind(gl);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
         color2.init(glad);
         depth2.init(glad);
         id2.init(glad);
-        id2.bind(gl);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
         labelingId2.init(glad);
-        labelingId2.bind(gl);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
-
-        finalColor.init(glad);
-        
+        finalColor.init(glad);    
         finalId.init(glad);
-        finalId.bind(gl);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
-
         finalLabelingId.init(glad);
-        finalLabelingId.bind(gl);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
-
         countTexture.init(glad);
-        countTexture.bind(gl);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
 
         hullTexture.init(glad);
 
@@ -722,9 +587,6 @@ public abstract class Ghosting implements GLEventListener {
         finalBuffer.init(glad);
 
         bitmaskBuffer.init(glad);
-        //if(labeling.labelInvisibleGeometry.getValue() == 0) {
-        bbuffer2.init(glad);
-        //}
 
         countBuffer.init(glad);
 
@@ -767,7 +629,6 @@ public abstract class Ghosting implements GLEventListener {
         halloBuffer.init(glad);
 
         saq.init(glad);
-        showLabelingId.init(glad);
 
         projectionPass.init(glad);
         accumPass.init(glad);
@@ -783,36 +644,8 @@ public abstract class Ghosting implements GLEventListener {
         ComponentEvents ce = (ComponentEvents) glad;
         ce.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {}
-            public void mousePressed(MouseEvent e) {
-                /*if((labeling.layout.colorLabel.getValue() == 1 || labeling.layout.colorLines.getValue() == 1) && selection.getValue() == 1) {
-                   int x = e.getX();
-                   int y = height - e.getY();
-                   Rectangle2D[] bounds = labeling.getLabelBounds();
-                   //Mesh[] meshes = scene.getAllMeshes().toArray(new Mesh[scene.getSize()]);
-                   //boolean labelClicked = false;
-                   for(int i = 0; i < bounds.length; i++) {
-                       if(bounds[i].contains(x, y)) {
-                            if(!multipleSelection) {
-                                for(int j = 0; j < scene.getSize(); j++) {
-                                    if(j == i) continue;
-                                    importance[j].setValue(0.1f);
-                                }
-                            }
-                            if(importance[i].getValue() == 0.1f) {
-                                importance[i].setValue(1f);
-                            }
-                            else {
-                                importance[i].setValue(0.1f);
-                            }
-                       }
-                   }
-                   //if(!labelClicked) {
-                   //    System.out.println("Background clicked.");
-                   //}
-                }*/
-            }
+            public void mousePressed(MouseEvent e) {}
             public void mouseReleased(MouseEvent e) {
-                //importanceDecrease.setValue(0f);
                 if(interaction && labeling != null) {
                    labeling.calculateLayout = true;
                 }
@@ -828,60 +661,24 @@ public abstract class Ghosting implements GLEventListener {
             }
             public void mouseMoved(MouseEvent e) {}
         });
-
-        ce.addKeyListener(new KeyListener() {
-
-            public void keyTyped(KeyEvent e) {
-            }
-
-            public void keyPressed(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_SHIFT) {
-                    multipleSelection = true;
-                }
-            }
-
-            public void keyReleased(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_SHIFT) {
-                    multipleSelection = false;
-                }
-                if(e.getKeyCode() == KeyEvent.VK_CONTROL) {
-                    if(selection.getValue() == 0) {
-                        selection.setValue(1);
-                    }
-                    else {
-                        selection.setValue(0);
-                    }
-                }
-            }
-        });
         }
     }
 
     public void display(GLAutoDrawable glad) {
-        GL3 gl = glad.getGL().getGL3();
+        GL2 gl = glad.getGL().getGL2();
         if(selection.getValue() == 0) {
             draw.display(glad);
         }
         else {
             boolean isInteraction = interaction;
 
-            // interpolate importance
-            //importance = eimportance;
-
             countBuffer.get().bind(gl);
-            
-            float[] clearcolor = {0f, 0f, 0f, 0f};
-            gl.glClearBufferfv(GL3.GL_COLOR, 0, clearcolor, 0);
-            gl.glClearBufferfv(GL3.GL_COLOR, 1, clearcolor, 0);
-            //gl.glClearColor(0f, 0f, 0f, 0f);
-            //gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
+            gl.glClearColor(0f, 0f, 0f, 0f);
+            gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
 
             projectionBuffer.bind(gl);
-            int[] clearcolori = {0, 0, 0, 0};
-            gl.glClearBufferuiv(GL3.GL_COLOR, 0, clearcolori, 0);
-
-            //gl.glClearColorIui(0, 0, 0, 0);
-            //gl.glClearBuffer(GL2.GL_COLOR_BUFFER_BIT);
+            gl.glClearColorIui(0, 0, 0, 0);
+            gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
             projectionPass.prepare(glad);
             for(Mesh mesh : scene.getAllMeshes()) {
                 if(importance[mesh.getId()].getValue() == 0f) continue;
@@ -916,9 +713,8 @@ public abstract class Ghosting implements GLEventListener {
             }
 
             bitmaskBuffer.get().bind(gl);
-            gl.glClearBufferuiv(GL3.GL_COLOR, 0, clearcolori, 0);
-            //gl.glClearColorIui(0, 0, 0, 0);
-            //gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
+            gl.glClearColorIui(0, 0, 0, 0);
+            gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
             bitmask.display(glad);
             gl.glDisable(GL.GL_COLOR_LOGIC_OP);
 
@@ -976,9 +772,6 @@ public abstract class Ghosting implements GLEventListener {
                 if(labeling != null && (labeling.labelInvisibleGeometry.getValue() == 1 || maxLayers <= 1)) {
                     count.display(glad);
                 }
-                if(labeling == null || (labeling.labelInvisibleGeometry.getValue() == 0 && maxLayers == 1)) {
-                    bitmaskBuffer2.set(bbuffer2);
-                }
                 
                 blendLayers.display(glad);
 
@@ -1004,27 +797,19 @@ public abstract class Ghosting implements GLEventListener {
             //silhouette.display(glad);
             //hallo.display(glad);
             saq.display(glad);
-            if(showId.getValue() == 1) {
-                showLabelingId.display(glad);
-            }
             //halloCompose.display(glad);
 
             // if needed then calculate and display labeling
             if(labeling != null) {
-                if(selection.getValue() == 1 && !isInteraction && interactionAlowed) {
+                if(!isInteraction && interactionAlowed) {
                     if(!labeling.isInitialized()) {
                         labeling.init(glad);
                     }
-                    //if(labeling.calculateLayout) {
-                        hullPass.display(glad);
-                        if(showInternalArea.getValue() == 1) {
-                            displayHullPass.display(glad);
-                        }
-                        //System.out.print("Recalculating layout ... ");
-                        labeling.calculate(glad);
-                        labeling.calculateLayout = false;
-                        //System.out.println("done");
-                    //}
+                    hullPass.display(glad);
+                    if(showInternalArea.getValue() == 1) {
+                        displayHullPass.display(glad);
+                    }
+                    labeling.calculate(glad);
                     if(showLabeling.getValue() == 1) {
                         labeling.display(glad);
                     }
@@ -1033,50 +818,6 @@ public abstract class Ghosting implements GLEventListener {
                         labeling.display(glad);
                 }
             }
-            
-            if(saveImage) {
-                try {
-                    gl.glPixelStorei(GL.GL_PACK_ALIGNMENT, 1);
-                    int size = width * height * 3;
-                    //int size = GLBuffers.sizeof(gl, new int[1], GL2.GL_BGR, GL.GL_BYTE, width, height, 1, true);
-                    ByteBuffer buffer = GLBuffers.newDirectByteBuffer(size);
-                    FrameBuffer.bindScreen(gl);
-                    gl.glReadBuffer(GL.GL_FRONT);
-                    gl.glReadPixels(0, 0, width, height, GL2.GL_BGR, GL.GL_BYTE, buffer);
-                    BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-                    int[] bd = ((DataBufferInt) bi.getRaster().getDataBuffer()).getData();
-
-                    for (int y = 0; y < height; y++) {
-                        for (int x = 0; x < width; x++) {
-                            int b = 2 * buffer.get();
-                            int g = 2 * buffer.get();
-                            int r = 2 * buffer.get();
-
-                            bd[(height - y - 1) * width + x] = (r << 16) | (g << 8) | b | 0xFF000000;
-                        }
-                    }
-                    if(roi.getValue()[0] == 0) {
-                        ImageIO.write(bi, "png", new File(saveImagePath + "image.png"));
-                    }
-                    else {
-                        int id = binlog(roi.getValue()[0]);
-                        System.out.println("Saving image for roi " + id);
-                        ImageIO.write(bi, "png", new File(saveImagePath + "image" + id + ".png"));
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-                saveImage = false;
-            }
-            
-            /*FrameBuffer.bindScreen(gl);
-            gl.glActiveTexture(GL.GL_TEXTURE0);
-            gl.glDisable(GL.GL_DEPTH_TEST);
-            gl.glDisable(GL.GL_BLEND);
-            textRenderer.beginRendering(width, height);
-            textRenderer.setColor(0f, 0f, 0f, 1f);
-            textRenderer.draw("FPS: ", 10, 10);
-            textRenderer.endRendering();*/
 
             color.restart();
             invColor.restart();
@@ -1086,9 +827,6 @@ public abstract class Ghosting implements GLEventListener {
             labelingId.restart();
             invLabelingId.restart();
             layer.restart();
-            if(labeling == null || labeling.labelInvisibleGeometry.getValue() == 0) {
-                bitmaskBuffer2.set(bitmaskBuffer);
-            }
         }
     }
     
@@ -1143,7 +881,7 @@ public abstract class Ghosting implements GLEventListener {
         layer1.reshape(glad, x, y, width, height);
         layer2.reshape(glad, x, y, width, height);
         bitmaskBuffer.reshape(glad, x, y, width, height);
-        bbuffer2.reshape(glad, x, y, width, height);
+        //bbuffer2.reshape(glad, x, y, width, height);
 
         countBuffer.reshape(glad, x, y, width, height);
         hullBuffer.reshape(glad, x, y, width, height);
@@ -1164,7 +902,7 @@ public abstract class Ghosting implements GLEventListener {
         composeLayers.reshape(glad, x, y, width, height);
         blendLayers.reshape(glad, x, y, width, height);
         saq.reshape(glad, x, y, width, height);
-        showLabelingId.reshape(glad, x, y, width, height);
+        //showLabelingId.reshape(glad, x, y, width, height);
         hullPass.reshape(glad, x, y, width, height);
         displayHullPass.reshape(glad, x, y, width, height);
         if(labeling != null) {
@@ -1318,6 +1056,10 @@ public abstract class Ghosting implements GLEventListener {
         w.addMenu(modelParamsMenu);
 
         JMenu layoutMenu = new JMenu("View");
+
+        BooleanMenuItem selectionMenuItem = new BooleanMenuItem("Enable ghosting", selection);
+        layoutMenu.add(selectionMenuItem);
+
         BooleanMenuItem leftMenuItem = new BooleanMenuItem("Selective transparency", selectiveTransparency);
         layoutMenu.add(leftMenuItem);
 
@@ -1341,13 +1083,13 @@ public abstract class Ghosting implements GLEventListener {
 
         BooleanMenuItem backgroundMenuItem = new BooleanMenuItem("Background", background);
         layoutMenu.add(backgroundMenuItem);
+
+        BooleanMenuItem showIdMenuItem = new BooleanMenuItem("Show id", showId);
+        layoutMenu.add(showIdMenuItem);
         
         if(labeling != null) {
             BooleanMenuItem redblueMenuItem = new BooleanMenuItem("Red/Blue visualization", redBlueVis);
             layoutMenu.add(redblueMenuItem);
-
-            BooleanMenuItem selectionMenuItem = new BooleanMenuItem("Selection", selection);
-            layoutMenu.add(selectionMenuItem);
 
             BooleanMenuItem labelingMenuItem = new BooleanMenuItem("Show labeling", showLabeling);
             layoutMenu.add(labelingMenuItem);
@@ -1360,9 +1102,6 @@ public abstract class Ghosting implements GLEventListener {
 
             BooleanMenuItem invisibleMenuItem = new BooleanMenuItem("Label invisible", labeling.labelInvisibleGeometry);
             layoutMenu.add(invisibleMenuItem);
-
-            BooleanMenuItem showIdMenuItem = new BooleanMenuItem("Show id", showId);
-            layoutMenu.add(showIdMenuItem);
 
             BooleanMenuItem showRoiMenuItem = new BooleanMenuItem("Show roi", roiVis);
             layoutMenu.add(showRoiMenuItem);

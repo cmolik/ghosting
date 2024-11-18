@@ -230,9 +230,9 @@ public class GhostingPinto extends Ghosting {
                     if(labeling.considerTransparency.getValue() == 1 || maxLayers <= 1) {
                         count.display(glad);
                     }
-                    if(labeling.considerTransparency.getValue() == 0 && maxLayers == 1) {
-                        bitmaskBuffer2.set(bbuffer2);
-                    }
+                    // if(labeling.considerTransparency.getValue() == 0 && maxLayers == 1) {
+                    //     bitmaskBuffer2.set(bbuffer2);
+                    // }
                 }
                 
                 blendLayers.display(glad);
@@ -263,9 +263,9 @@ public class GhostingPinto extends Ghosting {
             //silhouette.display(glad);
             //hallo.display(glad);
             saq.display(glad);
-            if(showId.getValue() == 1) {
-                showLabelingId.display(glad);
-            }
+            // if(showId.getValue() == 1) {
+            //     showLabelingId.display(glad);
+            // }
             //halloCompose.display(glad);
 
 
@@ -291,9 +291,9 @@ public class GhostingPinto extends Ghosting {
             labelingId.restart();
             //invId.restart();
             layer.restart();
-            if(labeling != null && labeling.considerTransparency.getValue() == 0) {
-                bitmaskBuffer2.set(bitmaskBuffer);
-            }
+            // if(labeling != null && labeling.considerTransparency.getValue() == 0) {
+            //     bitmaskBuffer2.set(bitmaskBuffer);
+            // }
         }
     }
     

@@ -164,7 +164,7 @@ public class LabelingUserTest extends Thread {
         int bit = roi % 32;
         roiMask[index] = 1 << bit;
         ls.roi.setValue(roiMask);
-        ls.saveImage = true;
+        //ls.saveImage = true;
     }
     
     public void setRun(boolean run) {
