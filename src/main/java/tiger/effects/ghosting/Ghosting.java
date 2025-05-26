@@ -19,6 +19,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
@@ -353,8 +354,8 @@ public abstract class Ghosting implements GLEventListener {
         rs.enable(GL.GL_COLOR_LOGIC_OP);
         rs.setLogicOp(GL.GL_OR);
 
-        InputStream vertex = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/projection.vert");
-        InputStream fragment = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/projection.frag");
+        URL vertex = ClassLoader.getSystemResource("tiger/effects/ghosting/projection.vert");
+        URL fragment = ClassLoader.getSystemResource("tiger/effects/ghosting/projection.frag");
         projectionPass = new Pass(vertex, fragment);
         projectionPass.scene = scene;
         projectionPass.renderState = rs;
@@ -368,7 +369,7 @@ public abstract class Ghosting implements GLEventListener {
         rs.enable(GL.GL_BLEND);
         rs.setBlendFunc(GL.GL_ONE, GL.GL_ONE);
 
-        fragment = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/accum.frag");
+        fragment = ClassLoader.getSystemResource("tiger/effects/ghosting/accum.frag");
         accumPass = new Saq(fragment, projectionTexture);
         accumPass.scene = scene;
         accumPass.renderState = rs;
@@ -382,8 +383,8 @@ public abstract class Ghosting implements GLEventListener {
         rs.enable(GL.GL_DEPTH_TEST);
         rs.disable(GL.GL_BLEND);
 
-        vertex = ClassLoader.getSystemResourceAsStream("tiger/example/Phong.vert");
-        fragment = ClassLoader.getSystemResourceAsStream("tiger/example/Phong.frag");
+        vertex = ClassLoader.getSystemResource("tiger/example/Phong.vert");
+        fragment = ClassLoader.getSystemResource("tiger/example/Phong.frag");
         draw = new Pass(vertex, fragment);
         draw.scene = scene;
         draw.renderState = rs;
@@ -402,8 +403,8 @@ public abstract class Ghosting implements GLEventListener {
         labelingIndex = new GlslProgramIntParameter("labelingIndex", 0);
         labelingBit = new GlslProgramIntParameter("labelingBit", 0);
 
-        vertex = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/firstLayer.vert");
-        fragment = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/firstLayer.frag");
+        vertex = ClassLoader.getSystemResource("tiger/effects/ghosting/firstLayer.vert");
+        fragment = ClassLoader.getSystemResource("tiger/effects/ghosting/firstLayer.frag");
         firstLayer = new Pass(vertex, fragment);
         firstLayer.scene = scene;
         firstLayer.setTarget(layer);
@@ -414,8 +415,8 @@ public abstract class Ghosting implements GLEventListener {
         firstLayer.glslVaryingParameters.add(roiColor);
         firstLayer.renderState = rs;
 
-        vertex = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/nextLayer.vert");
-        fragment = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/nextLayer.frag");
+        vertex = ClassLoader.getSystemResource("tiger/effects/ghosting/nextLayer.vert");
+        fragment = ClassLoader.getSystemResource("tiger/effects/ghosting/nextLayer.frag");
         nextLayer = new Pass(vertex, fragment);
         nextLayer.scene = scene;
         nextLayer.addTexture(depth, "depth");
@@ -442,13 +443,13 @@ public abstract class Ghosting implements GLEventListener {
         rs.enable(GL.GL_COLOR_LOGIC_OP);
         rs.setLogicOp(GL.GL_OR);
 
-        fragment = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/intsaq.frag");
+        fragment = ClassLoader.getSystemResource("tiger/effects/ghosting/intsaq.frag");
         bitmask = new Saq(fragment);
         bitmask.addTexture(id, "id");
         bitmask.setTarget(bitmaskBuffer);
         bitmask.renderState = rs;
 
-        fragment = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/intsaq2.frag");
+        fragment = ClassLoader.getSystemResource("tiger/effects/ghosting/intsaq2.frag");
         bitmask2 = new Saq(fragment);
         bitmask2.addTexture(id, "id");
         bitmask2.addTexture(labelingId, "labelingId");
@@ -465,7 +466,7 @@ public abstract class Ghosting implements GLEventListener {
         rs.enable(GL.GL_BLEND);
         rs.setBlendFunc(GL.GL_ONE, GL.GL_ONE);
 
-        fragment = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/count.frag");
+        fragment = ClassLoader.getSystemResource("tiger/effects/ghosting/count.frag");
         count = new Saq(fragment, labelingId);
         count.addTexture(compositionTexture, "composition");
         count.addTexture(finalColor, "finalColor");
@@ -498,7 +499,7 @@ public abstract class Ghosting implements GLEventListener {
         rs.disable(GL.GL_DEPTH_TEST);
         rs.disable(GL.GL_BLEND);
 
-        fragment = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/background.frag");
+        fragment = ClassLoader.getSystemResource("tiger/effects/ghosting/background.frag");
         saq = new Saq(fragment, finalColor);
         saq.addTexture(finalId, "id");
         saq.addTexture(finalLabelingId, "labelingId");
@@ -528,8 +529,8 @@ public abstract class Ghosting implements GLEventListener {
         rs.enable(GL.GL_DEPTH_TEST);
         rs.disable(GL.GL_BLEND);
 
-        vertex = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/extrude.vert");
-        fragment = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/id.frag");
+        vertex = ClassLoader.getSystemResource("tiger/effects/ghosting/extrude.vert");
+        fragment = ClassLoader.getSystemResource("tiger/effects/ghosting/id.frag");
         hullPass = new Pass(vertex, fragment);
         hullPass.glslDefaultParameters.add(DefaultParameter.MESH_ID);
         hullPass.setTarget(hullBuffer);
@@ -542,7 +543,7 @@ public abstract class Ghosting implements GLEventListener {
         rs.disable(GL.GL_BLEND);
 
         //vertex = ClassLoader.getSystemResourceAsStream("tiger/effects/labeling/extrude.vert");
-        fragment = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/Convolution.frag");
+        fragment = ClassLoader.getSystemResource("tiger/effects/ghosting/Convolution.frag");
         displayHullPass = new Saq(fragment, hullTexture);
         displayHullPass.renderState = rs;
 

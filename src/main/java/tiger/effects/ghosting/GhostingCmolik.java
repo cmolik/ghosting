@@ -5,10 +5,12 @@
 
 package tiger.effects.ghosting;
 
-import java.io.InputStream;
+import java.net.URL;
+
 import com.jogamp.opengl.GL;
-import scene.surface.mesh.Mesh;
+
 import scene.Scene;
+import scene.surface.mesh.Mesh;
 import tiger.core.GlslProgramFloatParameter;
 import tiger.core.RenderState;
 import tiger.effects.labeling.AbstractExternalLabeling;
@@ -49,7 +51,7 @@ public class GhostingCmolik extends Ghosting {
         offsetX = new GlslProgramFloatParameter("offsetX", 1f);
         offsetY = new GlslProgramFloatParameter("offsetY", 1f);
 
-        InputStream fragment = ClassLoader.getSystemResourceAsStream("tiger/effects/ghosting/Composition.frag");
+        URL fragment = ClassLoader.getSystemResource("tiger/effects/ghosting/Composition.frag");
         composeLayers = new Saq(fragment);
         composeLayers.addTexture(color, "color");
         composeLayers.addTexture(depth, "depth");
