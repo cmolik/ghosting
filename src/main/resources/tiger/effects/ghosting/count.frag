@@ -11,9 +11,9 @@ uniform float accumulatedTransparencyTreshold;
 in vec2 texCoord;
 
 void main(void) {
-   uvec4 id = texture(texture, texCoord);
-   float layer_transparency = texture(composition, texCoord).a;
-   float accumulated_transparency = texture(finalColor, texCoord).a;
+   uvec4 id = texture2D(texture, texCoord);
+   float layer_transparency = texture2D(composition, texCoord).a;
+   float accumulated_transparency = texture2D(finalColor, texCoord).a;
    if(id == vec4(0u))
         discard;
 

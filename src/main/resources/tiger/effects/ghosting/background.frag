@@ -9,12 +9,12 @@ uniform int background;
 uniform int showId;
 uniform int idToShow;
 
-varying vec2 texCoord;
+in vec2 texCoord;
 
 void main() {
-  vec4 t = texture(texture, texCoord);
-  uvec4 objectId = texture(id, texCoord);
-  uvec4 labelId = texture(labelingId, texCoord);
+  vec4 t = texture2D(texture, texCoord);
+  uvec4 objectId = texture2D(id, texCoord);
+  uvec4 labelId = texture2D(labelingId, texCoord);
   if(showId == 1) {
     uint bit = uint(idToShow) % 32u;
     uint index = uint(idToShow) / 32u;
