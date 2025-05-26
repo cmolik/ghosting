@@ -46,7 +46,7 @@ public class GhostingParameters {
         properties.setProperty(ls.edges.name, ls.edges.toString()); 
         properties.setProperty(ls.background.name, ls.background.toString()); 
         properties.setProperty(ls.redBlueVis.name, ls.redBlueVis.toString());  
-        properties.setProperty(ls.selection.name, ls.selection.toString()); 
+        // properties.setProperty(ls.selection.name, ls.selection.toString()); 
         properties.setProperty(ls.showLabeling.name, ls.showLabeling.toString()); 
         properties.setProperty(ls.labeling.considerTransparency.name, ls.labeling.considerTransparency.toString()); 
         properties.setProperty(ls.labeling.labelInvisibleGeometry.name, ls.labeling.labelInvisibleGeometry.toString()); 
@@ -85,8 +85,8 @@ public class GhostingParameters {
         if(p != null) ls.background.parseValue(p);
         p = properties.getProperty(ls.redBlueVis.name);
         if(p != null) ls.redBlueVis.parseValue(p);
-        p = properties.getProperty(ls.selection.name);
-        if(p != null) ls.selection.parseValue(p);
+        // p = properties.getProperty(ls.selection.name);
+        // if(p != null) ls.selection.parseValue(p);
         p = properties.getProperty(ls.showLabeling.name);
         if(p != null) ls.showLabeling.parseValue(p);
         if(ls.labeling != null) {

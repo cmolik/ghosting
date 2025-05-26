@@ -337,7 +337,8 @@ public class LabelingUserTest extends Thread {
             public void mouseClicked(MouseEvent e) {}
             public void mouseReleased(MouseEvent e) {}
             public void mousePressed(MouseEvent e) {
-                if(effect.labeling.layout.colorLabel.getValue() == 2 && effect.selection.getValue() == 1) {
+                // if(effect.labeling.layout.colorLabel.getValue() == 2 && effect.selection.getValue() == 1) {
+                if(effect.labeling.layout.colorLabel.getValue() == 2) {
                    int x = e.getX();
                    int y = effect.height - e.getY();
                    Rectangle2D[] bounds = effect.labeling.getLabelBounds();

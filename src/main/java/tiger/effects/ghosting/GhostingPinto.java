@@ -133,10 +133,10 @@ public class GhostingPinto extends Ghosting {
     
     public void display(GLAutoDrawable glad) {
         GL2 gl = glad.getGL().getGL2();
-        if(selection.getValue() == 0) {
-            draw.display(glad);
-        }
-        else {
+        // if(selection.getValue() == 0) {
+        //     draw.display(glad);
+        // }
+        // else {
             boolean isInteraction = interaction;
 
             countBuffer.get().bind(gl);
@@ -271,7 +271,8 @@ public class GhostingPinto extends Ghosting {
 
             // if needed then calculate and display labeling
             if(labeling != null) {
-                if(selection.getValue() == 1 && !isInteraction) {
+                // if(selection.getValue() == 1 && !isInteraction) {
+                if(!isInteraction) {
                     //if(labeling.calculateLayout) {
                         hullPass.display(glad);
                         labeling.calculate(glad);
@@ -294,7 +295,7 @@ public class GhostingPinto extends Ghosting {
             // if(labeling != null && labeling.considerTransparency.getValue() == 0) {
             //     bitmaskBuffer2.set(bitmaskBuffer);
             // }
-        }
+        // }
     }
     
     @Override

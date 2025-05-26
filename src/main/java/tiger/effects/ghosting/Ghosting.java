@@ -82,7 +82,7 @@ public abstract class Ghosting implements GLEventListener {
     String propertiesPath = "C:/Temp/";
 
     boolean interaction = false;
-    boolean multipleSelection = false;
+    //boolean multipleSelection = false;
     boolean interactionAlowed = true;
 
     public Scene<Mesh> scene;
@@ -93,7 +93,7 @@ public abstract class Ghosting implements GLEventListener {
     MutableLink<Grouping> layerGroups;
     MutableLink<Grouping> labelGroups;
 
-    GlslProgramFloatParameter[] importance;
+    public GlslProgramFloatParameter[] importance;
 
     long intStart;
     long intLength = 500;
@@ -118,8 +118,8 @@ public abstract class Ghosting implements GLEventListener {
     Texture2D finalColor;
     public Texture2D finalId;
     public Texture2D finalLabelingId;
-    Texture2D countTexture;
-    Texture2D hullTexture;
+    public Texture2D countTexture;
+    public Texture2D hullTexture;
     Texture2D silhouetteTexture;
     Texture2D halloTexture;
     Texture2D compositionTexture;
@@ -184,7 +184,7 @@ public abstract class Ghosting implements GLEventListener {
     GlslProgramIntParameter edges = new GlslProgramIntParameter("edges", 1);
     GlslProgramIntParameter background = new GlslProgramIntParameter("background", 1);
     GlslProgramIntParameter redBlueVis = new GlslProgramIntParameter("redBlue", 0);
-    public GlslProgramIntParameter selection = new GlslProgramIntParameter("selection", 1);
+    //public GlslProgramIntParameter selection = new GlslProgramIntParameter("selection", 1);
     GlslProgramIntParameter showLabeling = new GlslProgramIntParameter("Show labeling", 1);
     GlslProgramIntParameter fakeLabels = new GlslProgramIntParameter("fakeLabels", 0);
     public GlslProgramIntParameter idToShow = new GlslProgramIntParameter("idToShow", 0);
@@ -196,6 +196,9 @@ public abstract class Ghosting implements GLEventListener {
     GlslProgramIntParameter showModelParameters = new GlslProgramIntParameter("Show model parameters", 1);
     GlslProgramIntParameter showInternalArea = new GlslProgramIntParameter("Show internal area", 0);
     GlslProgramIntParameter showComposition = new GlslProgramIntParameter("showComposition", 1);
+    public GlslProgramIntParameter produceCountTexture = new GlslProgramIntParameter("produceCountTexture", 1);
+    public GlslProgramIntParameter considerTrasparencyInCountTexture = new GlslProgramIntParameter("considerTrasparencyInCountTexture", 1);
+    public GlslProgramIntParameter produceHullTexture = new GlslProgramIntParameter("produceHullTexture", 1);
     
     public GlslProgramUIntArrayParameter roi = new GlslProgramUIntArrayParameter("roi", new int[] {0, 0, 0, 0});
     
@@ -666,30 +669,39 @@ public abstract class Ghosting implements GLEventListener {
 
     public void display(GLAutoDrawable glad) {
         GL2 gl = glad.getGL().getGL2();
-        if(selection.getValue() == 0) {
-            draw.display(glad);
-        }
-        else {
+        // if(selection.getValue() == 0) {
+        //     draw.display(glad);
+        // }
+        // else {
+            color.restart();
+            invColor.restart();
+            depth.restart();
+            invDepth.restart();
+            id.restart();
+            labelingId.restart();
+            invLabelingId.restart();
+            layer.restart();
+
             boolean isInteraction = interaction;
 
             countBuffer.get().bind(gl);
             gl.glClearColor(0f, 0f, 0f, 0f);
             gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
 
-            projectionBuffer.bind(gl);
-            gl.glClearColorIui(0, 0, 0, 0);
-            gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
-            projectionPass.prepare(glad);
-            for(Mesh mesh : scene.getAllMeshes()) {
-                if(importance[mesh.getId()].getValue() == 0f) continue;
-                bit.setValue(layerGroups.get().getGroup(mesh) % bitmaskBits);
-                index.setValue(layerGroups.get().getGroup(mesh) / bitmaskBits);
-                bit.init(projectionPass.glslProgram);
-                index.init(projectionPass.glslProgram);
+            // projectionBuffer.bind(gl);
+            // gl.glClearColorIui(0, 0, 0, 0);
+            // gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
+            // projectionPass.prepare(glad);
+            // for(Mesh mesh : scene.getAllMeshes()) {
+            //     if(importance[mesh.getId()].getValue() == 0f) continue;
+            //     bit.setValue(layerGroups.get().getGroup(mesh) % bitmaskBits);
+            //     index.setValue(layerGroups.get().getGroup(mesh) / bitmaskBits);
+            //     bit.init(projectionPass.glslProgram);
+            //     index.init(projectionPass.glslProgram);
 
-                mesh.getRenderer().render(glad, mesh);
-            }
-            accumPass.display(glad);
+            //     mesh.getRenderer().render(glad, mesh);
+            // }
+            // accumPass.display(glad);
 
             //vyprazdnit prvni a druhy color buffer
             layer.get().bind(gl);
@@ -725,7 +737,6 @@ public abstract class Ghosting implements GLEventListener {
             gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
             int maxLayers = 0;
             // while there is geometry to render
-            //for(int i = 0; i < 1; i++) {
             do {
                 maxLayers++;
                 layers++;
@@ -769,7 +780,8 @@ public abstract class Ghosting implements GLEventListener {
                 bitmask2.display(glad);
                 gl.glDisable(GL.GL_COLOR_LOGIC_OP);
                 
-                if(labeling != null && (labeling.labelInvisibleGeometry.getValue() == 1 || maxLayers <= 1)) {
+                // if(labeling != null && (labeling.labelInvisibleGeometry.getValue() == 1 || maxLayers <= 1)) {
+                if(produceCountTexture.getValue() == 1 && (considerTrasparencyInCountTexture.getValue() == 1 || maxLayers <= 1)) {
                     count.display(glad);
                 }
                 
@@ -799,15 +811,18 @@ public abstract class Ghosting implements GLEventListener {
             saq.display(glad);
             //halloCompose.display(glad);
 
+            if(produceHullTexture.getValue() == 1) {
+                hullPass.display(glad);
+                if(showInternalArea.getValue() == 1) {
+                    displayHullPass.display(glad);
+                }
+            }
+
             // if needed then calculate and display labeling
             if(labeling != null) {
                 if(!isInteraction && interactionAlowed) {
                     if(!labeling.isInitialized()) {
                         labeling.init(glad);
-                    }
-                    hullPass.display(glad);
-                    if(showInternalArea.getValue() == 1) {
-                        displayHullPass.display(glad);
                     }
                     labeling.calculate(glad);
                     if(showLabeling.getValue() == 1) {
@@ -815,19 +830,11 @@ public abstract class Ghosting implements GLEventListener {
                     }
                 }
                 else if(showLabeling.getValue() == 1 && !interactionAlowed) {
-                        labeling.display(glad);
+                    labeling.display(glad);
                 }
             }
 
-            color.restart();
-            invColor.restart();
-            depth.restart();
-            invDepth.restart();
-            id.restart();
-            labelingId.restart();
-            invLabelingId.restart();
-            layer.restart();
-        }
+        // }
     }
     
     public int binlog( int bits ) {
@@ -1057,8 +1064,8 @@ public abstract class Ghosting implements GLEventListener {
 
         JMenu layoutMenu = new JMenu("View");
 
-        BooleanMenuItem selectionMenuItem = new BooleanMenuItem("Enable ghosting", selection);
-        layoutMenu.add(selectionMenuItem);
+        //BooleanMenuItem selectionMenuItem = new BooleanMenuItem("Enable ghosting", selection);
+        //layoutMenu.add(selectionMenuItem);
 
         BooleanMenuItem leftMenuItem = new BooleanMenuItem("Selective transparency", selectiveTransparency);
         layoutMenu.add(leftMenuItem);
@@ -1257,7 +1264,7 @@ public abstract class Ghosting implements GLEventListener {
         properties.setProperty(edges.name, edges.toString()); 
         properties.setProperty(background.name, background.toString()); 
         properties.setProperty(redBlueVis.name, redBlueVis.toString());  
-        properties.setProperty(selection.name, selection.toString()); 
+        //properties.setProperty(selection.name, selection.toString()); 
         properties.setProperty(showLabeling.name, showLabeling.toString()); 
         properties.setProperty(labeling.considerTransparency.name, labeling.considerTransparency.toString()); 
         properties.setProperty(labeling.labelInvisibleGeometry.name, labeling.labelInvisibleGeometry.toString()); 
@@ -1296,8 +1303,8 @@ public abstract class Ghosting implements GLEventListener {
         if(p != null) background.parseValue(p);
         p = properties.getProperty(redBlueVis.name);
         if(p != null) redBlueVis.parseValue(p);
-        p = properties.getProperty(selection.name);
-        if(p != null) selection.parseValue(p);
+        //p = properties.getProperty(selection.name);
+        //if(p != null) selection.parseValue(p);
         p = properties.getProperty(showLabeling.name);
         if(p != null) showLabeling.parseValue(p);
         if(labeling != null) {
